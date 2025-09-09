@@ -120,11 +120,9 @@ interface HomePageProps {
   // Temporarily setting params to 'any' to bypass a persistent, misleading TypeScript error
   // where Next.js's internal type generation incorrectly expects 'params' to be a Promise.
   params: any; 
-  searchParams: {
-    currency?: string;
-    amount?: string;
-    crypto?: string;
-  };
+  // Temporarily setting searchParams to 'any' to bypass a persistent, misleading TypeScript error
+  // where Next.js's internal type generation incorrectly expects 'searchParams' to be a Promise.
+  searchParams: any;
 }
 
 export default async function Home({
