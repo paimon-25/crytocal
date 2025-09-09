@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { BitcoinAmountInput } from "@/components/BitcoinAmountInput";
-import { CryptoSelector } from "@/components/CryptoSelector"; // Import CryptoSelector
+import { CryptoSelector } from "@/components/CryptoSelector";
+import { ThemeToggle } from "@/components/ThemeToggle"; // Import ThemeToggle
 
 interface Item {
   name: string;
@@ -144,9 +145,12 @@ export default async function Home({
   return (
     <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
-        <h1 className="text-4xl font-bold text-center sm:text-left">
-          Crypto Purchasing Power Calculator
-        </h1>
+        <div className="flex justify-between items-center w-full"> {/* Added wrapper for title and toggle */}
+          <h1 className="text-4xl font-bold text-center sm:text-left">
+            Crypto Purchasing Power Calculator
+          </h1>
+          <ThemeToggle /> {/* Placed ThemeToggle here */}
+        </div>
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center sm:text-left max-w-2xl">
           How many everyday items can you buy with the price of your chosen cryptocurrency?
           This calculator makes cryptocurrency prices relatable by translating crypto values into tangible, everyday purchasing power.
