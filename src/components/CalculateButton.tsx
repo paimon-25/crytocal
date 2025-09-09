@@ -40,7 +40,7 @@ export function CalculateButton({ cryptoId, amount, currencyCode }: CalculateBut
       className="w-[180px] justify-center"
     >
       <Calculator className="mr-2 h-4 w-4" />
-      Calculate
+      Surprise Me
     </Button>
   );
 }
