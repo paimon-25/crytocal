@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -26,11 +25,12 @@ interface Currency {
   name: string;
 }
 
-export function CurrencySelector() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentCurrency = searchParams.get("currency")?.toUpperCase() || "USD";
+interface CurrencySelectorProps {
+  value: string;
+  onValueChange: (currencyCode: string) => void;
+}
 
+export function CurrencySelector({ value, onValueChange }: CurrencySelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [currencies, setCurrencies] = React.useState<Currency[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -39,7 +39,7 @@ export function CurrencySelector() {
     const fetchCurrencies = async () => {
       try {
         const response = await fetch("https://api.frankfurter.app/currencies", {
-          next: { revalidate: 3600 * 24 }, // Revalidate daily
+          next: { revalidate: 3600 * 24 },
         });
         if (!response.ok) {
           const errorData = await response.json();
@@ -64,15 +64,8 @@ export function CurrencySelector() {
     fetchCurrencies();
   }, []);
 
-  const handleCurrencyChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("currency", value);
-    router.push(`?${params.toString()}`);
-    setOpen(false);
-  };
-
   const selectedCurrencyName = currencies.find(
-    (currency) => currency.code === currentCurrency
+    (currency) => currency.code === value
   )?.name;
 
   return (
@@ -85,7 +78,7 @@ export function CurrencySelector() {
           className="w-[180px] justify-between"
           disabled={loading}
         >
-          {selectedCurrencyName || currentCurrency}
+          {selectedCurrencyName || value}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -99,12 +92,15 @@ export function CurrencySelector() {
                 <CommandItem
                   key={currency.code}
                   value={`${currency.name} (${currency.code})`}
-                  onSelect={() => handleCurrencyChange(currency.code)}
+                  onSelect={() => {
+                    onValueChange(currency.code);
+                    setOpen(false);
+                  }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      currentCurrency === currency.code ? "opacity-100" : "opacity-0"
+                      value === currency.code ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {currency.name} ({currency.code})

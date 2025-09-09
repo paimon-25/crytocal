@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -27,11 +26,12 @@ interface Crypto {
   symbol: string;
 }
 
-export function CryptoSelector() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentCryptoId = searchParams.get("crypto") || "bitcoin";
+interface CryptoSelectorProps {
+  value: string;
+  onValueChange: (cryptoId: string) => void;
+}
 
+export function CryptoSelector({ value, onValueChange }: CryptoSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [cryptos, setCryptos] = React.useState<Crypto[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -39,10 +39,9 @@ export function CryptoSelector() {
   React.useEffect(() => {
     const fetchCryptos = async () => {
       try {
-        // Fetch top 100 coins by market cap for a good initial list
         const response = await fetch(
           "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&locale=en",
-          { next: { revalidate: 3600 } } // Revalidate hourly
+          { next: { revalidate: 3600 } }
         );
         if (!response.ok) {
           const errorData = await response.json();
@@ -63,14 +62,7 @@ export function CryptoSelector() {
     fetchCryptos();
   }, []);
 
-  const handleCryptoChange = (cryptoId: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("crypto", cryptoId);
-    router.push(`?${params.toString()}`);
-    setOpen(false);
-  };
-
-  const selectedCrypto = cryptos.find((crypto) => crypto.id === currentCryptoId);
+  const selectedCrypto = cryptos.find((crypto) => crypto.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -96,12 +88,15 @@ export function CryptoSelector() {
                 <CommandItem
                   key={crypto.id}
                   value={crypto.name}
-                  onSelect={() => handleCryptoChange(crypto.id)}
+                  onSelect={() => {
+                    onValueChange(crypto.id);
+                    setOpen(false);
+                  }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      currentCryptoId === crypto.id ? "opacity-100" : "opacity-0"
+                      value === crypto.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {crypto.name} ({crypto.symbol.toUpperCase()})

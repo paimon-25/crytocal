@@ -1,12 +1,8 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CurrencySelector } from "@/components/CurrencySelector";
-import { CryptoAmountInput } from "@/components/CryptoAmountInput";
-import { CryptoSelector } from "@/components/CryptoSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Label } from "@/components/ui/label";
-import { SurpriseMeButton } from "@/components/SurpriseMeButton"; // Import the new component
+import { CalculatorControls } from "@/components/CalculatorControls"; // Import the new wrapper component
 
 interface Item {
   name: string;
@@ -229,17 +225,7 @@ export default async function Home({
           This calculator makes cryptocurrency prices relatable by translating crypto values into tangible, everyday purchasing power.
         </p>
 
-        <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="crypto-amount" className="text-sm">Crypto Amount</Label>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <CryptoAmountInput />
-              <CryptoSelector />
-              <CurrencySelector />
-              <SurpriseMeButton /> {/* Added the Surprise Me button here */}
-            </div>
-          </div>
-        </div>
+        <CalculatorControls /> {/* Replaced individual inputs and button with the new wrapper */}
 
         {/* Current Purchasing Power */}
         <Badge className="text-xl p-3 w-full text-center sm:text-left">
