@@ -2,9 +2,9 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CurrencySelector } from "@/components/CurrencySelector";
-import { CryptoAmountInput } from "@/components/CryptoAmountInput"; // Updated import
+import { CryptoAmountInput } from "@/components/CryptoAmountInput";
 import { CryptoSelector } from "@/components/CryptoSelector";
-import { ThemeToggle } from "@/components/ThemeToggle"; // Import ThemeToggle
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Item {
   name: string;
@@ -117,7 +117,7 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
 
 // Define the expected type for HomePageProps, including params
 interface HomePageProps {
-  params: { [key: string]: string | string[] }; // params is always present, even if empty
+  params: Record<string, string | string[] | undefined>; // Corrected type for root page params
   searchParams: {
     currency?: string;
     amount?: string;
@@ -190,14 +190,14 @@ export default async function Home({
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
           <Badge className="text-xl p-3">
             {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {cryptoName || selectedCryptoId} = {currencySymbol}
-            {totalCryptoValue.toLocaleString("en-US", {
+            {totalCryptoValue!.toLocaleString("en-US", { // Non-null assertion
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{" "}
             {selectedCurrency}
           </Badge>
           <div className="flex flex-col sm:flex-row gap-4">
-            <CryptoAmountInput /> {/* Updated component name */}
+            <CryptoAmountInput />
             <CryptoSelector />
             <CurrencySelector />
           </div>
@@ -207,7 +207,7 @@ export default async function Home({
           {everydayItems.map((item) => {
             // Ensure exchangeRate is not null before using it
             const convertedItemPrice = item.priceUSD * (exchangeRate ?? 1); // Use nullish coalescing for safety
-            const quantity = totalCryptoValue / convertedItemPrice;
+            const quantity = totalCryptoValue! / convertedItemPrice; // Non-null assertion
             return (
               <Card key={item.name} className="flex flex-col justify-between">
                 <CardHeader>
