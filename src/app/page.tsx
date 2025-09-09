@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+// Removed: import { toast } from "sonner"; // Toast functions should not be called directly in server components
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { BitcoinAmountInput } from "@/components/BitcoinAmountInput"; // Import BitcoinAmountInput
 
@@ -38,14 +38,14 @@ async function getBitcoinPrice(): Promise<number | null> {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Failed to fetch Bitcoin price:", response.statusText, errorData);
-      toast.error("Failed to fetch Bitcoin price. Please try again later.");
+      // Removed: toast.error("Failed to fetch Bitcoin price. Please try again later.");
       return null;
     }
     const data = await response.json();
     return data.bitcoin.usd;
   } catch (error) {
     console.error("Error fetching Bitcoin price:", error);
-    toast.error("An unexpected error occurred while fetching Bitcoin price.");
+    // Removed: toast.error("An unexpected error occurred while fetching Bitcoin price.");
     return null;
   }
 }
@@ -61,20 +61,20 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
     );
     if (!response.ok) {
       console.error("Failed to fetch exchange rate:", response.statusText);
-      toast.error(`Failed to fetch exchange rate for ${targetCurrency}. Falling back to USD.`);
+      // Removed: toast.error(`Failed to fetch exchange rate for ${targetCurrency}. Falling back to USD.`);
       return 1; // Fallback to 1 if fetch fails
     }
     const data = await response.json();
     if (data.rates && data.rates[targetCurrency]) {
       return data.rates[targetCurrency];
     } else {
-      console.error("Exchange rate not found in response:", data);
-      toast.error(`Exchange rate for ${targetCurrency} not found. Falling back to USD.`);
+      console.error(`Exchange rate for ${targetCurrency} not found in response. Full data:`, data); // Refined error message
+      // Removed: toast.error(`Exchange rate for ${targetCurrency} not found. Falling back to USD.`);
       return 1; // Fallback
     }
   } catch (error) {
     console.error("Error fetching exchange rate:", error);
-    toast.error(`An unexpected error occurred while fetching exchange rate for ${targetCurrency}. Falling back to USD.`);
+    // Removed: toast.error(`An unexpected error occurred while fetching exchange rate for ${targetCurrency}. Falling back to USD.`);
     return 1; // Fallback
   }
 }
