@@ -103,10 +103,17 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
   }
 }
 
+// Define the expected type for searchParams
+interface HomePageSearchParams {
+  currency?: string;
+  amount?: string;
+  crypto?: string;
+}
+
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { currency?: string; amount?: string; crypto?: string };
+  searchParams: HomePageSearchParams; // Use the defined interface
 }) {
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
   const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
@@ -145,11 +152,11 @@ export default async function Home({
   return (
     <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
-        <div className="flex justify-between items-center w-full"> {/* Added wrapper for title and toggle */}
+        <div className="flex justify-between items-center w-full">
           <h1 className="text-4xl font-bold text-center sm:text-left">
             Crypto Purchasing Power Calculator
           </h1>
-          <ThemeToggle /> {/* Placed ThemeToggle here */}
+          <ThemeToggle />
         </div>
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center sm:text-left max-w-2xl">
           How many everyday items can you buy with the price of your chosen cryptocurrency?
