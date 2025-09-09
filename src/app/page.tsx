@@ -2,7 +2,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { CalculatorControls } from "@/components/CalculatorControls"; // Import the new wrapper component
+import { CalculatorControls } from "@/components/CalculatorControls";
 
 interface Item {
   name: string;
@@ -133,6 +133,7 @@ export default async function Home({
   params, // Destructure params to satisfy the HomePageProps interface
   searchParams,
 }: HomePageProps) {
+  const isCalculated = searchParams.calculated === "true";
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
   const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
   const selectedCryptoId = searchParams.crypto || "bitcoin"; // Default to bitcoin
@@ -153,29 +154,6 @@ export default async function Home({
     displayError = `Exchange Rate Error: ${exchangeRateError}`;
   } else if (currentTotalCryptoValue === null) {
     displayError = "Could not calculate purchasing power due to an unknown data issue.";
-  }
-
-  if (displayError) {
-    return (
-      <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-        <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
-          <h1 className="text-4xl font-bold text-center sm:text-left">
-            Crypto Purchasing Power Calculator
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 text-center sm:text-left max-w-2xl">
-            How many everyday items can you buy with the price of your chosen cryptocurrency?
-            This calculator makes cryptocurrency prices relatable by comparing them
-            to familiar purchases.
-          </p>
-          <div className="w-full text-center sm:text-left mb-8">
-            <Badge variant="destructive" className="text-xl p-3">
-              {displayError}
-            </Badge>
-          </div>
-        </main>
-        <MadeWithDyad />
-      </div>
-    );
   }
 
   const renderPurchasingPowerCards = (totalValue: number | null, cryptoName: string | null, title: string) => (
@@ -225,18 +203,35 @@ export default async function Home({
           This calculator makes cryptocurrency prices relatable by translating crypto values into tangible, everyday purchasing power.
         </p>
 
-        <CalculatorControls /> {/* Replaced individual inputs and button with the new wrapper */}
+        <CalculatorControls />
 
-        {/* Current Purchasing Power */}
-        <Badge className="text-xl p-3 w-full text-center sm:text-left">
-          Today: {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {currentCryptoName || selectedCryptoId} = {currencySymbol}
-          {currentTotalCryptoValue!.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}{" "}
-          {selectedCurrency}
-        </Badge>
-        {renderPurchasingPowerCards(currentTotalCryptoValue, currentCryptoName, "Today's Purchasing Power")}
+        {isCalculated ? (
+          displayError ? (
+            <div className="w-full text-center sm:text-left mb-8">
+              <Badge variant="destructive" className="text-xl p-3">
+                {displayError}
+              </Badge>
+            </div>
+          ) : (
+            <>
+              <Badge className="text-xl p-3 w-full text-center sm:text-left">
+                Today: {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {currentCryptoName || selectedCryptoId} = {currencySymbol}
+                {currentTotalCryptoValue!.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                {selectedCurrency}
+              </Badge>
+              {renderPurchasingPowerCards(currentTotalCryptoValue, currentCryptoName, "Today's Purchasing Power")}
+            </>
+          )
+        ) : (
+          <div className="w-full text-center sm:text-left mb-8">
+            <Badge className="text-xl p-3">
+              Select a crypto, amount, and currency, then click "Calculate" to see its purchasing power!
+            </Badge>
+          </div>
+        )}
       </main>
       <MadeWithDyad />
     </div>

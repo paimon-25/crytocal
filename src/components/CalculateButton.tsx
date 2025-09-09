@@ -27,6 +27,7 @@ export function CalculateButton({ cryptoId, amount, currencyCode }: CalculateBut
     params.set("crypto", cryptoId);
     params.set("currency", currencyCode);
     params.set("amount", parsedAmount.toString());
+    params.set("calculated", "true"); // Add the calculated flag
 
     router.push(`?${params.toString()}`);
     toast.success(`Calculating purchasing power for ${parsedAmount} ${cryptoId} in ${currencyCode}.`);
