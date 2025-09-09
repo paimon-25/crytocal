@@ -111,13 +111,13 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
   } catch (error) {
     const errorMessage = `Error fetching exchange rate for ${targetCurrency}: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
-    return { rate: null, error: errorMessage };
+    return { price: null, name: null, error: errorMessage };
   }
 }
 
 // Define the expected type for HomePageProps, including params
 interface HomePageProps {
-  params: Record<string, string | string[] | undefined>; // Corrected type for root page params
+  params: Record<string, never>; // Corrected type for root page params to be an empty object
   searchParams: {
     currency?: string;
     amount?: string;
@@ -190,7 +190,7 @@ export default async function Home({
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
           <Badge className="text-xl p-3">
             {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {cryptoName || selectedCryptoId} = {currencySymbol}
-            {totalCryptoValue!.toLocaleString("en-US", { // Non-null assertion
+            {totalCryptoValue!.toLocaleString("en-US", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{" "}
@@ -206,8 +206,8 @@ export default async function Home({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {everydayItems.map((item) => {
             // Ensure exchangeRate is not null before using it
-            const convertedItemPrice = item.priceUSD * (exchangeRate ?? 1); // Use nullish coalescing for safety
-            const quantity = totalCryptoValue! / convertedItemPrice; // Non-null assertion
+            const convertedItemPrice = item.priceUSD * (exchangeRate ?? 1);
+            const quantity = totalCryptoValue! / convertedItemPrice;
             return (
               <Card key={item.name} className="flex flex-col justify-between">
                 <CardHeader>
