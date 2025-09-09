@@ -39,6 +39,10 @@ export function DateSelector() {
     }
   }, [date, router, searchParams, selectedDateParam]);
 
+  const today = new Date();
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(today.getFullYear() - 1);
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -60,8 +64,9 @@ export function DateSelector() {
           onSelect={setDate}
           initialFocus
           captionLayout="dropdown-buttons"
-          fromYear={2010} // Bitcoin started gaining traction around this time
-          toYear={new Date().getFullYear()}
+          fromMonth={oneYearAgo} // Start selectable month from one year ago
+          toMonth={today} // End selectable month at today
+          disabled={(day) => day > today || day < oneYearAgo} // Disable dates outside the 1-year range
         />
       </PopoverContent>
     </Popover>
