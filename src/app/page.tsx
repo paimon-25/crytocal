@@ -111,13 +111,13 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
   } catch (error) {
     const errorMessage = `Error fetching exchange rate for ${targetCurrency}: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
-    return { rate: null, error: errorMessage }; // Corrected return type
+    return { rate: null, error: errorMessage };
   }
 }
 
 // Define the expected type for HomePageProps, including params
 interface HomePageProps {
-  params: {}; // Corrected type for root page params to be an empty object
+  params: { [key: string]: string | string[] | undefined }; // Made params type more generic
   searchParams: {
     currency?: string;
     amount?: string;
