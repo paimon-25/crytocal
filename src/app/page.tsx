@@ -112,7 +112,7 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
   } catch (error) {
     const errorMessage = `Error fetching exchange rate for ${targetCurrency}: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
-    return { price: null, name: null, error: errorMessage };
+    return { rate: null, error: errorMessage };
   }
 }
 
