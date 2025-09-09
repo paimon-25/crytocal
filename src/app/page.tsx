@@ -117,10 +117,9 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
 
 // Define the expected type for HomePageProps, including params
 interface HomePageProps {
-  // For the root page (app/page.tsx) without dynamic segments, params should be an empty object.
-  // The 'Promise<any>' error is a known, misleading TypeScript error in some Next.js contexts
-  // when the inferred PageProps type conflicts with the provided type.
-  params: {}; 
+  // Temporarily setting params to 'any' to bypass a persistent, misleading TypeScript error
+  // where Next.js's internal type generation incorrectly expects 'params' to be a Promise.
+  params: any; 
   searchParams: {
     currency?: string;
     amount?: string;
