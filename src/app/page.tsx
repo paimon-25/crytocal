@@ -2,7 +2,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CurrencySelector } from "@/components/CurrencySelector";
-import { BitcoinAmountInput } from "@/components/BitcoinAmountInput";
+import { CryptoAmountInput } from "@/components/CryptoAmountInput"; // Updated import
 import { CryptoSelector } from "@/components/CryptoSelector";
 import { ThemeToggle } from "@/components/ThemeToggle"; // Import ThemeToggle
 
@@ -197,7 +197,7 @@ export default async function Home({
             {selectedCurrency}
           </Badge>
           <div className="flex flex-col sm:flex-row gap-4">
-            <BitcoinAmountInput />
+            <CryptoAmountInput /> {/* Updated component name */}
             <CryptoSelector />
             <CurrencySelector />
           </div>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function BitcoinAmountInput() {
+export function CryptoAmountInput() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentAmount = searchParams.get("amount");
@@ -18,7 +18,7 @@ export function BitcoinAmountInput() {
     if (currentAmount !== inputValue) {
       setInputValue(currentAmount || "1");
     }
-  }, [currentAmount]);
+  }, [currentAmount, inputValue]); // Added inputValue to dependency array
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -29,7 +29,7 @@ export function BitcoinAmountInput() {
       const parsedValue = parseFloat(value);
       const params = new URLSearchParams(searchParams.toString());
 
-      if (!isNaN(parsedValue) && parsedValue >= 0) { // Changed to >= 0
+      if (!isNaN(parsedValue) && parsedValue >= 0) {
         params.set("amount", parsedValue.toString());
       } else {
         params.delete("amount"); // Remove if invalid or empty, defaulting to 1 on the server
@@ -47,7 +47,7 @@ export function BitcoinAmountInput() {
         id="crypto-amount"
         type="number"
         step="0.01"
-        min="0" // Changed min to 0
+        min="0"
         value={inputValue}
         onChange={handleAmountChange}
         className="w-[180px]"
