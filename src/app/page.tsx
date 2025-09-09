@@ -5,6 +5,7 @@ import { CurrencySelector } from "@/components/CurrencySelector";
 import { CryptoAmountInput } from "@/components/CryptoAmountInput";
 import { CryptoSelector } from "@/components/CryptoSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Label } from "@/components/ui/label"; // Added Label import
 
 interface Item {
   name: string;
@@ -111,7 +112,7 @@ async function getExchangeRate(targetCurrency: string): Promise<{ rate: number |
   } catch (error) {
     const errorMessage = `Error fetching exchange rate for ${targetCurrency}: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
-    return { rate: null, error: errorMessage };
+    return { price: null, name: null, error: errorMessage };
   }
 }
 
@@ -196,10 +197,13 @@ export default async function Home({
             })}{" "}
             {selectedCurrency}
           </Badge>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <CryptoAmountInput />
-            <CryptoSelector />
-            <CurrencySelector />
+          <div className="flex flex-col gap-2"> {/* Container for label and input row */}
+            <Label htmlFor="crypto-amount" className="text-sm">Crypto Amount</Label>
+            <div className="flex flex-col sm:flex-row gap-4"> {/* Row for input and selectors */}
+              <CryptoAmountInput />
+              <CryptoSelector />
+              <CurrencySelector />
+            </div>
           </div>
         </div>
 

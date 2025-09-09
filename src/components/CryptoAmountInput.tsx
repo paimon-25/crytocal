@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// Label import removed as it will be handled by the parent component
 
 export function CryptoAmountInput() {
   const router = useRouter();
@@ -44,18 +44,15 @@ export function CryptoAmountInput() {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor="crypto-amount" className="text-sm">Crypto Amount</Label>
-      <Input
-        id="crypto-amount"
-        type="number"
-        step="0.01"
-        min="0"
-        value={inputValue}
-        onChange={handleAmountChange}
-        className="w-[180px]"
-        placeholder="e.g., 0.1"
-      />
-    </div>
+    <Input
+      id="crypto-amount"
+      type="number"
+      step="0.01"
+      min="0"
+      value={inputValue}
+      onChange={handleAmountChange}
+      className="w-[180px]"
+      placeholder="e.g., 0.1"
+    />
   );
 }
