@@ -2,7 +2,8 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CurrencySelector } from "@/components/CurrencySelector"; // Import CurrencySelector
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { BitcoinAmountInput } from "@/components/BitcoinAmountInput"; // Import BitcoinAmountInput
 
 interface Item {
   name: string;
@@ -81,17 +82,20 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { currency?: string };
+  searchParams: { currency?: string; amount?: string };
 }) {
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
+  const bitcoinAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
+
   const exchangeRate = await getExchangeRate(selectedCurrency);
 
   const bitcoinPriceUSD = await getBitcoinPrice();
-  const bitcoinPrice = bitcoinPriceUSD !== null ? bitcoinPriceUSD * exchangeRate : null;
+  // Calculate total value based on the input Bitcoin amount
+  const totalBitcoinValue = bitcoinPriceUSD !== null ? bitcoinPriceUSD * bitcoinAmount * exchangeRate : null;
 
   const currencySymbol = currencySymbols[selectedCurrency] || "$"; // Default to $ if symbol not found
 
-  if (bitcoinPrice === null) {
+  if (totalBitcoinValue === null) {
     return (
       <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
@@ -127,20 +131,23 @@ export default async function Home({
 
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
           <Badge className="text-xl p-3">
-            1 Bitcoin = {currencySymbol}
-            {bitcoinPrice.toLocaleString("en-US", {
+            {bitcoinAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} Bitcoin = {currencySymbol}
+            {totalBitcoinValue.toLocaleString("en-US", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{" "}
             {selectedCurrency}
           </Badge>
-          <CurrencySelector />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <BitcoinAmountInput />
+            <CurrencySelector />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {everydayItems.map((item) => {
             const convertedItemPrice = item.priceUSD * exchangeRate;
-            const quantity = bitcoinPrice / convertedItemPrice;
+            const quantity = totalBitcoinValue / convertedItemPrice;
             return (
               <Card key={item.name} className="flex flex-col justify-between">
                 <CardHeader>
