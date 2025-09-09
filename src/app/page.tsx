@@ -1,4 +1,3 @@
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -233,7 +232,6 @@ export default async function Home({
           </div>
         )}
       </main>
-      <MadeWithDyad />
     </div>
   );
 }
