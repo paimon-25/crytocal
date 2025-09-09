@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bitcoin Purchasing Power Calculator", // Updated title
+  title: "Crypto Purchasing Power Calculator", // Updated title
   description: "A real-time calculator that makes cryptocurrency prices relatable by comparing them to familiar purchases like coffee, gas, groceries, and streaming subscriptions.", // Updated description
 };
 

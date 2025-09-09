@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Assuming Label exists or creating it if not
+import { Label } from "@/components/ui/label";
 
 export function BitcoinAmountInput() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export function BitcoinAmountInput() {
       const parsedValue = parseFloat(value);
       const params = new URLSearchParams(searchParams.toString());
 
-      if (!isNaN(parsedValue) && parsedValue > 0) {
+      if (!isNaN(parsedValue) && parsedValue >= 0) { // Changed to >= 0
         params.set("amount", parsedValue.toString());
       } else {
         params.delete("amount"); // Remove if invalid or empty, defaulting to 1 on the server
@@ -42,12 +42,12 @@ export function BitcoinAmountInput() {
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="bitcoin-amount" className="text-sm">Bitcoin Amount</Label>
+      <Label htmlFor="crypto-amount" className="text-sm">Crypto Amount</Label>
       <Input
-        id="bitcoin-amount"
+        id="crypto-amount"
         type="number"
         step="0.01"
-        min="0.01"
+        min="0" // Changed min to 0
         value={inputValue}
         onChange={handleAmountChange}
         className="w-[180px]"

@@ -1,9 +1,9 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// Removed: import { toast } from "sonner"; // Toast functions should not be called directly in server components
 import { CurrencySelector } from "@/components/CurrencySelector";
-import { BitcoinAmountInput } from "@/components/BitcoinAmountInput"; // Import BitcoinAmountInput
+import { BitcoinAmountInput } from "@/components/BitcoinAmountInput";
+import { CryptoSelector } from "@/components/CryptoSelector"; // Import CryptoSelector
 
 interface Item {
   name: string;
@@ -27,26 +27,52 @@ const currencySymbols: { [key: string]: string } = {
   GBP: "£",
   CAD: "C$",
   JPY: "¥",
+  AUD: "A$",
+  CHF: "CHF",
+  CNY: "¥",
+  SEK: "kr",
+  NZD: "NZ$",
+  MXN: "Mex$",
+  SGD: "S$",
+  HKD: "HK$",
+  NOK: "kr",
+  KRW: "₩",
+  TRY: "₺",
+  INR: "₹",
+  RUB: "₽",
+  BRL: "R$",
+  ZAR: "R",
 };
 
-async function getBitcoinPrice(): Promise<number | null> {
+async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null; name: string | null }> {
   try {
     const response = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",
+      `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoId}&vs_currencies=usd`,
       { next: { revalidate: 60 } } // Revalidate every 60 seconds
     );
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("Failed to fetch Bitcoin price:", response.statusText, errorData);
-      // Removed: toast.error("Failed to fetch Bitcoin price. Please try again later.");
-      return null;
+      console.error(`Failed to fetch price for ${cryptoId}:`, response.statusText, errorData);
+      return { price: null, name: null };
     }
     const data = await response.json();
-    return data.bitcoin.usd;
+    const price = data[cryptoId]?.usd;
+
+    // Fetch coin details to get the full name
+    const coinDetailsResponse = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${cryptoId}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`,
+      { next: { revalidate: 3600 } } // Revalidate hourly
+    );
+    let coinName = cryptoId; // Default to ID if name not found
+    if (coinDetailsResponse.ok) {
+      const coinDetails = await coinDetailsResponse.json();
+      coinName = coinDetails.name || cryptoId;
+    }
+
+    return { price: price, name: coinName };
   } catch (error) {
-    console.error("Error fetching Bitcoin price:", error);
-    // Removed: toast.error("An unexpected error occurred while fetching Bitcoin price.");
-    return null;
+    console.error(`Error fetching price for ${cryptoId}:`, error);
+    return { price: null, name: null };
   }
 }
 
@@ -56,25 +82,22 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
   }
   try {
     const response = await fetch(
-      `https://api.exchangerate.host/latest?base=USD&symbols=${targetCurrency}`,
+      `https://api.frankfurter.app/latest?from=USD&to=${targetCurrency}`,
       { next: { revalidate: 3600 } } // Revalidate hourly
     );
     if (!response.ok) {
       console.error("Failed to fetch exchange rate:", response.statusText);
-      // Removed: toast.error(`Failed to fetch exchange rate for ${targetCurrency}. Falling back to USD.`);
       return 1; // Fallback to 1 if fetch fails
     }
     const data = await response.json();
     if (data.rates && data.rates[targetCurrency]) {
       return data.rates[targetCurrency];
     } else {
-      console.error(`Exchange rate for ${targetCurrency} not found in response. Full data:`, data); // Refined error message
-      // Removed: toast.error(`Exchange rate for ${targetCurrency} not found. Falling back to USD.`);
+      console.error(`Exchange rate for ${targetCurrency} not found in response. Full data:`, data);
       return 1; // Fallback
     }
   } catch (error) {
     console.error("Error fetching exchange rate:", error);
-    // Removed: toast.error(`An unexpected error occurred while fetching exchange rate for ${targetCurrency}. Falling back to USD.`);
     return 1; // Fallback
   }
 }
@@ -82,34 +105,34 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { currency?: string; amount?: string };
+  searchParams: { currency?: string; amount?: string; crypto?: string };
 }) {
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
-  const bitcoinAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
+  const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
+  const selectedCryptoId = searchParams.crypto || "bitcoin"; // Default to bitcoin
 
   const exchangeRate = await getExchangeRate(selectedCurrency);
 
-  const bitcoinPriceUSD = await getBitcoinPrice();
-  // Calculate total value based on the input Bitcoin amount
-  const totalBitcoinValue = bitcoinPriceUSD !== null ? bitcoinPriceUSD * bitcoinAmount * exchangeRate : null;
+  const { price: cryptoPriceUSD, name: cryptoName } = await getCryptoPrice(selectedCryptoId);
+  const totalCryptoValue = cryptoPriceUSD !== null ? cryptoPriceUSD * cryptoAmount * exchangeRate : null;
 
   const currencySymbol = currencySymbols[selectedCurrency] || "$"; // Default to $ if symbol not found
 
-  if (totalBitcoinValue === null) {
+  if (totalCryptoValue === null) {
     return (
       <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
           <h1 className="text-4xl font-bold text-center sm:text-left">
-            Bitcoin Purchasing Power Calculator
+            Crypto Purchasing Power Calculator
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400 text-center sm:text-left max-w-2xl">
-            How many everyday items can you buy with the price of one Bitcoin?
+            How many everyday items can you buy with the price of your chosen cryptocurrency?
             This calculator makes cryptocurrency prices relatable by comparing them
             to familiar purchases.
           </p>
           <div className="w-full text-center sm:text-left mb-8">
             <Badge variant="destructive" className="text-xl p-3">
-              Could not load Bitcoin price.
+              Could not load cryptocurrency price.
             </Badge>
           </div>
         </main>
@@ -122,17 +145,17 @@ export default async function Home({
     <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
         <h1 className="text-4xl font-bold text-center sm:text-left">
-          Bitcoin Purchasing Power Calculator
+          Crypto Purchasing Power Calculator
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 text-center sm:text-left max-w-2xl">
-          How many everyday items can you buy with the price of one Bitcoin?
+          How many everyday items can you buy with the price of your chosen cryptocurrency?
           This calculator makes cryptocurrency prices relatable by translating crypto values into tangible, everyday purchasing power.
         </p>
 
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
           <Badge className="text-xl p-3">
-            {bitcoinAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} Bitcoin = {currencySymbol}
-            {totalBitcoinValue.toLocaleString("en-US", {
+            {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {cryptoName || selectedCryptoId} = {currencySymbol}
+            {totalCryptoValue.toLocaleString("en-US", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}{" "}
@@ -140,6 +163,7 @@ export default async function Home({
           </Badge>
           <div className="flex flex-col sm:flex-row gap-4">
             <BitcoinAmountInput />
+            <CryptoSelector />
             <CurrencySelector />
           </div>
         </div>
@@ -147,7 +171,7 @@ export default async function Home({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {everydayItems.map((item) => {
             const convertedItemPrice = item.priceUSD * exchangeRate;
-            const quantity = totalBitcoinValue / convertedItemPrice;
+            const quantity = totalCryptoValue / convertedItemPrice;
             return (
               <Card key={item.name} className="flex flex-col justify-between">
                 <CardHeader>
