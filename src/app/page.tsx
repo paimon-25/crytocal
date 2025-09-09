@@ -6,8 +6,6 @@ import { CryptoAmountInput } from "@/components/CryptoAmountInput";
 import { CryptoSelector } from "@/components/CryptoSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Label } from "@/components/ui/label";
-import { DateSelector } from "@/components/DateSelector"; // Import the new DateSelector
-import { format } from "date-fns"; // Import format for date formatting
 
 interface Item {
   name: string;
@@ -48,27 +46,16 @@ const currencySymbols: { [key: string]: string } = {
   ZAR: "R",
 };
 
-async function getCryptoPrice(cryptoId: string, date?: string): Promise<{ price: number | null; name: string | null; error: string | null }> {
+async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null; name: string | null; error: string | null }> {
   try {
-    let url: string;
-    let revalidateTime: number;
-
-    if (date) {
-      // CoinGecko history API expects date in dd-mm-yyyy format
-      const [year, month, day] = date.split('-');
-      const formattedDate = `${day}-${month}-${year}`;
-      url = `https://api.coingecko.com/api/v3/coins/${cryptoId}/history?date=${formattedDate}&localization=false`;
-      revalidateTime = 3600 * 24; // Revalidate daily for historical data
-    } else {
-      url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoId}&vs_currencies=usd`;
-      revalidateTime = 60; // Revalidate every 60 seconds for current data
-    }
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoId}&vs_currencies=usd`;
+    const revalidateTime = 60; // Revalidate every 60 seconds for current data
 
     const response = await fetch(url, { next: { revalidate: revalidateTime } });
 
     if (!response.ok) {
       const errorData = await response.json();
-      const errorMessage = `Failed to fetch ${date ? 'historical' : 'current'} price for ${cryptoId}: ${response.statusText} - ${JSON.stringify(errorData)}`;
+      const errorMessage = `Failed to fetch price for ${cryptoId}: ${response.statusText} - ${JSON.stringify(errorData)}`;
       console.error(errorMessage);
       return { price: null, name: null, error: errorMessage };
     }
@@ -77,36 +64,29 @@ async function getCryptoPrice(cryptoId: string, date?: string): Promise<{ price:
     let price: number | undefined;
     let coinName: string | undefined;
 
-    if (date) {
-      price = data.market_data?.current_price?.usd;
-      coinName = data.name;
-    } else {
-      price = data[cryptoId]?.usd;
-      // For current price, we still need to fetch the name separately if not already done
-      // This is handled by the initial CryptoSelector fetch, but for robustness, we can add a fallback
-      if (price !== undefined) {
-        const coinDetailsResponse = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${cryptoId}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`,
-          { next: { revalidate: 3600 } }
-        );
-        if (coinDetailsResponse.ok) {
-          const coinDetails = await coinDetailsResponse.json();
-          coinName = coinDetails.name || cryptoId;
-        } else {
-          coinName = cryptoId;
-        }
+    price = data[cryptoId]?.usd;
+    if (price !== undefined) {
+      const coinDetailsResponse = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${cryptoId}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`,
+        { next: { revalidate: 3600 } }
+      );
+      if (coinDetailsResponse.ok) {
+        const coinDetails = await coinDetailsResponse.json();
+        coinName = coinDetails.name || cryptoId;
+      } else {
+        coinName = cryptoId;
       }
     }
 
     if (price === undefined) {
-      const errorMessage = `${date ? 'Historical' : 'Current'} price for ${cryptoId} not found in API response.`;
+      const errorMessage = `Price for ${cryptoId} not found in API response.`;
       console.error(errorMessage, data);
       return { price: null, name: null, error: errorMessage };
     }
 
     return { price: price, name: coinName || cryptoId, error: null };
   } catch (error) {
-    const errorMessage = `Error fetching ${date ? 'historical' : 'current'} price for ${cryptoId}: ${error instanceof Error ? error.message : String(error)}`;
+    const errorMessage = `Error fetching price for ${cryptoId}: ${error instanceof Error ? error.message : String(error)}`;
     console.error(errorMessage);
     return { price: null, name: null, error: errorMessage };
   }
@@ -159,7 +139,6 @@ export default async function Home({
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
   const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
   const selectedCryptoId = searchParams.crypto || "bitcoin"; // Default to bitcoin
-  const historicalDateParam = searchParams.date; // Get the historical date from search params
 
   const { rate: exchangeRate, error: exchangeRateError } = await getExchangeRate(selectedCurrency);
 
@@ -167,36 +146,17 @@ export default async function Home({
   const { price: currentCryptoPriceUSD, name: currentCryptoName, error: currentCryptoPriceError } = await getCryptoPrice(selectedCryptoId);
   const currentTotalCryptoValue = (currentCryptoPriceUSD !== null && exchangeRate !== null) ? currentCryptoPriceUSD * cryptoAmount * exchangeRate : null;
 
-  // Fetch historical crypto price if a date is selected
-  let historicalCryptoPriceUSD: number | null = null;
-  let historicalCryptoName: string | null = null;
-  let historicalCryptoPriceError: string | null = null;
-  let historicalTotalCryptoValue: number | null = null;
-
-  if (historicalDateParam) {
-    const historicalPriceData = await getCryptoPrice(selectedCryptoId, historicalDateParam);
-    historicalCryptoPriceUSD = historicalPriceData.price;
-    historicalCryptoName = historicalPriceData.name;
-    historicalCryptoPriceError = historicalPriceData.error;
-    historicalTotalCryptoValue = (historicalCryptoPriceUSD !== null && exchangeRate !== null) ? historicalCryptoPriceUSD * cryptoAmount * exchangeRate : null;
-  }
-
   const currencySymbol = currencySymbols[selectedCurrency] || "$"; // Default to $ if symbol not found
 
   // Determine the error message to display
   let displayError: string | null = null;
   if (currentCryptoPriceError) {
-    displayError = `Current Crypto Price Error: ${currentCryptoPriceError}`;
-  } else if (historicalCryptoPriceError) {
-    displayError = `Historical Crypto Price Error: ${historicalCryptoPriceError}`;
+    displayError = `Crypto Price Error: ${currentCryptoPriceError}`;
   } else if (exchangeRateError) {
     displayError = `Exchange Rate Error: ${exchangeRateError}`;
-  } else if (currentTotalCryptoValue === null && !historicalDateParam) {
+  } else if (currentTotalCryptoValue === null) {
     displayError = "Could not calculate purchasing power due to an unknown data issue.";
-  } else if (currentTotalCryptoValue === null && historicalDateParam && historicalTotalCryptoValue === null) {
-    displayError = "Could not calculate purchasing power for both current and historical dates.";
   }
-
 
   if (displayError) {
     return (
@@ -275,7 +235,6 @@ export default async function Home({
               <CryptoAmountInput />
               <CryptoSelector />
               <CurrencySelector />
-              <DateSelector /> {/* Add the DateSelector here */}
             </div>
           </div>
         </div>
@@ -290,21 +249,6 @@ export default async function Home({
           {selectedCurrency}
         </Badge>
         {renderPurchasingPowerCards(currentTotalCryptoValue, currentCryptoName, "Today's Purchasing Power")}
-
-        {/* Historical Purchasing Power */}
-        {historicalDateParam && historicalTotalCryptoValue !== null && (
-          <>
-            <Badge className="text-xl p-3 w-full text-center sm:text-left mt-8">
-              {format(new Date(historicalDateParam), "PPP")}: {cryptoAmount.toLocaleString("en-US", { maximumFractionDigits: 8 })} {historicalCryptoName || selectedCryptoId} = {currencySymbol}
-              {historicalTotalCryptoValue!.toLocaleString("en-US", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              {selectedCurrency}
-            </Badge>
-            {renderPurchasingPowerCards(historicalTotalCryptoValue, historicalCryptoName, `Purchasing Power on ${format(new Date(historicalDateParam), "PPP")}`)}
-          </>
-        )}
       </main>
       <MadeWithDyad />
     </div>
