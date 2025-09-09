@@ -45,7 +45,7 @@ const currencySymbols: { [key: string]: string } = {
   ZAR: "R",
 };
 
-async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null; name: string | null }> {
+async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null; name: string | null; error: string | null }> {
   try {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoId}&vs_currencies=usd`,
@@ -53,11 +53,18 @@ async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null;
     );
     if (!response.ok) {
       const errorData = await response.json();
-      console.error(`Failed to fetch price for ${cryptoId}:`, response.statusText, errorData);
-      return { price: null, name: null };
+      const errorMessage = `Failed to fetch price for ${cryptoId}: ${response.statusText} - ${JSON.stringify(errorData)}`;
+      console.error(errorMessage);
+      return { price: null, name: null, error: errorMessage };
     }
     const data = await response.json();
     const price = data[cryptoId]?.usd;
+
+    if (price === undefined) {
+      const errorMessage = `Price for ${cryptoId} not found in API response.`;
+      console.error(errorMessage, data);
+      return { price: null, name: null, error: errorMessage };
+    }
 
     // Fetch coin details to get the full name
     const coinDetailsResponse = await fetch(
@@ -70,16 +77,17 @@ async function getCryptoPrice(cryptoId: string): Promise<{ price: number | null;
       coinName = coinDetails.name || cryptoId;
     }
 
-    return { price: price, name: coinName };
+    return { price: price, name: coinName, error: null };
   } catch (error) {
-    console.error(`Error fetching price for ${cryptoId}:`, error);
-    return { price: null, name: null };
+    const errorMessage = `Error fetching price for ${cryptoId}: ${error instanceof Error ? error.message : String(error)}`;
+    console.error(errorMessage);
+    return { price: null, name: null, error: errorMessage };
   }
 }
 
-async function getExchangeRate(targetCurrency: string): Promise<number> {
+async function getExchangeRate(targetCurrency: string): Promise<{ rate: number | null; error: string | null }> {
   if (targetCurrency === "USD") {
-    return 1; // No conversion needed for USD
+    return { rate: 1, error: null }; // No conversion needed for USD
   }
   try {
     const response = await fetch(
@@ -87,19 +95,23 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
       { next: { revalidate: 3600 } } // Revalidate hourly
     );
     if (!response.ok) {
-      console.error("Failed to fetch exchange rate:", response.statusText);
-      return 1; // Fallback to 1 if fetch fails
+      const errorData = await response.json();
+      const errorMessage = `Failed to fetch exchange rate for ${targetCurrency}: ${response.statusText} - ${JSON.stringify(errorData)}`;
+      console.error(errorMessage);
+      return { rate: null, error: errorMessage };
     }
     const data = await response.json();
     if (data.rates && data.rates[targetCurrency]) {
-      return data.rates[targetCurrency];
+      return { rate: data.rates[targetCurrency], error: null };
     } else {
-      console.error(`Exchange rate for ${targetCurrency} not found in response. Full data:`, data);
-      return 1; // Fallback
+      const errorMessage = `Exchange rate for ${targetCurrency} not found in response.`;
+      console.error(errorMessage, data);
+      return { rate: null, error: errorMessage };
     }
   } catch (error) {
-    console.error("Error fetching exchange rate:", error);
-    return 1; // Fallback
+    const errorMessage = `Error fetching exchange rate for ${targetCurrency}: ${error instanceof Error ? error.message : String(error)}`;
+    console.error(errorMessage);
+    return { rate: null, error: errorMessage };
   }
 }
 
@@ -121,14 +133,24 @@ export default async function Home({
   const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
   const selectedCryptoId = searchParams.crypto || "bitcoin"; // Default to bitcoin
 
-  const exchangeRate = await getExchangeRate(selectedCurrency);
+  const { rate: exchangeRate, error: exchangeRateError } = await getExchangeRate(selectedCurrency);
+  const { price: cryptoPriceUSD, name: cryptoName, error: cryptoPriceError } = await getCryptoPrice(selectedCryptoId);
 
-  const { price: cryptoPriceUSD, name: cryptoName } = await getCryptoPrice(selectedCryptoId);
-  const totalCryptoValue = cryptoPriceUSD !== null ? cryptoPriceUSD * cryptoAmount * exchangeRate : null;
+  const totalCryptoValue = (cryptoPriceUSD !== null && exchangeRate !== null) ? cryptoPriceUSD * cryptoAmount * exchangeRate : null;
 
   const currencySymbol = currencySymbols[selectedCurrency] || "$"; // Default to $ if symbol not found
 
-  if (totalCryptoValue === null) {
+  // Determine the error message to display
+  let displayError: string | null = null;
+  if (cryptoPriceError) {
+    displayError = `Crypto Price Error: ${cryptoPriceError}`;
+  } else if (exchangeRateError) {
+    displayError = `Exchange Rate Error: ${exchangeRateError}`;
+  } else if (totalCryptoValue === null) {
+    displayError = "Could not calculate purchasing power due to an unknown data issue.";
+  }
+
+  if (displayError) {
     return (
       <div className="grid grid-rows-[1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <main className="flex flex-col gap-8 row-start-1 items-center sm:items-start w-full max-w-4xl">
@@ -142,7 +164,7 @@ export default async function Home({
           </p>
           <div className="w-full text-center sm:text-left mb-8">
             <Badge variant="destructive" className="text-xl p-3">
-              Could not load cryptocurrency price.
+              {displayError}
             </Badge>
           </div>
         </main>
@@ -183,7 +205,8 @@ export default async function Home({
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {everydayItems.map((item) => {
-            const convertedItemPrice = item.priceUSD * exchangeRate;
+            // Ensure exchangeRate is not null before using it
+            const convertedItemPrice = item.priceUSD * (exchangeRate ?? 1); // Use nullish coalescing for safety
             const quantity = totalCryptoValue / convertedItemPrice;
             return (
               <Card key={item.name} className="flex flex-col justify-between">
