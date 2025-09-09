@@ -103,18 +103,20 @@ async function getExchangeRate(targetCurrency: string): Promise<number> {
   }
 }
 
-// Define the expected type for searchParams
-interface HomePageSearchParams {
-  currency?: string;
-  amount?: string;
-  crypto?: string;
+// Define the expected type for HomePageProps, including params
+interface HomePageProps {
+  params: { [key: string]: string | string[] }; // params is always present, even if empty
+  searchParams: {
+    currency?: string;
+    amount?: string;
+    crypto?: string;
+  };
 }
 
 export default async function Home({
+  params, // Destructure params to satisfy the HomePageProps interface
   searchParams,
-}: {
-  searchParams: HomePageSearchParams; // Use the defined interface
-}) {
+}: HomePageProps) {
   const selectedCurrency = searchParams.currency?.toUpperCase() || "USD";
   const cryptoAmount = parseFloat(searchParams.amount || "1"); // Default to 1 if not provided or invalid
   const selectedCryptoId = searchParams.crypto || "bitcoin"; // Default to bitcoin
