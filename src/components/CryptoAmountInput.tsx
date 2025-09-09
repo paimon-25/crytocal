@@ -14,11 +14,14 @@ export function CryptoAmountInput() {
   const [inputValue, setInputValue] = React.useState(currentAmount || "1");
 
   React.useEffect(() => {
-    // Sync internal state with URL param if it changes externally
-    if (currentAmount !== inputValue) {
-      setInputValue(currentAmount || "1");
+    // Update internal state only when the URL's 'amount' parameter changes.
+    // This ensures the input reflects the URL, but doesn't interfere with user typing
+    // before the debounced URL update occurs.
+    const newAmount = currentAmount || "1";
+    if (inputValue !== newAmount) {
+      setInputValue(newAmount);
     }
-  }, [currentAmount, inputValue]); // Added inputValue to dependency array
+  }, [currentAmount]); // Only depend on currentAmount
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
