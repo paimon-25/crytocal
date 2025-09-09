@@ -6,6 +6,7 @@ import { CryptoAmountInput } from "@/components/CryptoAmountInput";
 import { CryptoSelector } from "@/components/CryptoSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Label } from "@/components/ui/label";
+import { SurpriseMeButton } from "@/components/SurpriseMeButton"; // Import the new component
 
 interface Item {
   name: string;
@@ -235,6 +236,7 @@ export default async function Home({
               <CryptoAmountInput />
               <CryptoSelector />
               <CurrencySelector />
+              <SurpriseMeButton /> {/* Added the Surprise Me button here */}
             </div>
           </div>
         </div>
