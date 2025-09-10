@@ -48,6 +48,17 @@ The generated MCP server can be integrated with:
 
 For detailed setup instructions, refer to the [Postman MCP Documentation](https://learning.postman.com/docs/postman-ai-developer-tools/mcp-servers/overview/)
 
+## Postman Notebook Documentation
+This project includes a comprehensive **Postman Notebook** that provides an interactive walkthrough of the Crypto Purchasing Power Calculator's API integrations and workflows.
+What's Included in the Notebook
+The Postman Notebook offers a hands-on experience with:
+- **Interactive API Testing**: Live requests to CoinGecko API for real-time cryptocurrency data[82]
+- **Currency Conversion Workflows**: Step-by-step examples of fetching exchange rates from Frankfurter API[82]
+
+Accessing the Notebook
+   **[View Interactive Notebook →](https://documenter.postman.com/view/your-notebook-id/your-notebook-key)**
+
+
 ## Getting Started
 Follow these steps to set up and run the project locally:
 
