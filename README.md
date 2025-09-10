@@ -1,6 +1,6 @@
 # Crypto Purchasing Power Calculator
 A real-time calculator that makes cryptocurrency prices relatable by comparing them to familiar purchases like coffee, gas, groceries, and streaming subscriptions. This application translates abstract crypto values into tangible, everyday purchasing power, helping users understand what their digital assets can truly buy.
-
+https://crytocal.vercel.app/
 ## Features
 *   **Real-time Cryptocurrency Data**: Fetches current prices for a wide range of cryptocurrencies from CoinGecko.
 *   **Multiple Fiat Currencies**: Allows users to select various fiat currencies (e.g., USD, EUR, GBP) for comparison, with exchange rates powered by Frankfurter API.
