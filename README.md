@@ -30,14 +30,14 @@ This project utilizes a custom Model Context Protocol (MCP) server generated thr
 
 ### MCP Server Setup
 The MCP server was created using:
-- **Postman MCP Generator**: [https://www.postman.com/explore/mcp-generator](https://www.postman.com/explore/mcp-generator)[67][70][78]
-- **CoinGecko API Integration**: Leverages CoinGecko's public API from the Postman API Network[67][70]
+- **Postman MCP Generator**: [https://www.postman.com/explore/mcp-generator](https://www.postman.com/explore/mcp-generator)
+- **CoinGecko API Integration**: Leverages CoinGecko's public API from the Postman API Network
 - **Frankfurter API Integration**: Utilizes currency exchange rate APIs for multi-currency support
 
 ### Benefits of MCP Integration
 - **AI Agent Compatibility**: Enables AI assistants like Claude to interact with cryptocurrency data
 - **Automated Workflows**: Supports automated price monitoring and purchasing power calculations
-- **Standardized Protocol**: Uses the open Model Context Protocol standard for reliable AI-to-API communication[67][70]
+- **Standardized Protocol**: Uses the open Model Context Protocol standard for reliable AI-to-API communication
 - **Extensible Architecture**: Easy to add new cryptocurrency APIs and features through the MCP framework
 
 ### Using the MCP Server
