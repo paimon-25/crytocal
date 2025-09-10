@@ -56,7 +56,7 @@ The Postman Notebook offers a hands-on experience with:
 - **Currency Conversion Workflows**: Step-by-step examples of fetching exchange rates from Frankfurter API[82]
 
 Accessing the Notebook
-   **[View Interactive Notebook →](https://documenter.postman.com/view/your-notebook-id/your-notebook-key)**
+   **[View Interactive Notebook →](https://www.postman.com/flight-participant-6134217/notebook/Pen1B4g4Wm4o/crypto-purchasing-power-calculator)**
 
 
 ## Getting Started
