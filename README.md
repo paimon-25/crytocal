@@ -46,7 +46,7 @@ The generated MCP server can be integrated with:
 - VS Code with MCP extensions
 - Other MCP-compatible AI development environments
 
-For detailed setup instructions, refer to the [Postman MCP Documentation](https://learning.postman.com/docs/postman-ai-developer-tools/mcp-servers/overview/)[67][70].
+For detailed setup instructions, refer to the [Postman MCP Documentation](https://learning.postman.com/docs/postman-ai-developer-tools/mcp-servers/overview/)
 
 ## Getting Started
 Follow these steps to set up and run the project locally:
